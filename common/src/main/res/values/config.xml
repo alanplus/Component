@@ -1,0 +1,8 @@
+<resources>
+    <!--获取两次点击退出间隔  -->
+    <string name="home_exit_msg">再按一次退出程序</string>
+    <integer name="home_exit_duration">3000</integer>
+    <!-- 常用配置 -->
+    <string name="log_tag">alan_log</string>
+    <bool name="is_debug">false</bool>
+</resources>
