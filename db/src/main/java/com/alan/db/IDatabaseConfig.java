@@ -6,6 +6,8 @@ import com.alan.db.base.DbModel;
 import com.alan.db.base.SQLiteManager;
 import com.alan.db.base.temp.BaseDAO;
 
+import net.sqlcipher.database.SQLiteDatabase;
+
 import java.util.List;
 
 /**
@@ -41,6 +43,8 @@ public interface IDatabaseConfig {
 
     List<Class<? extends BaseDAO>> getTempTables(Context context);
 
-    String getAttachDatabaseName();
+    void attatch(SQLiteDatabase sqLiteDatabase);
+
+    String getKey();
 
 }

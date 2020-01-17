@@ -1,6 +1,6 @@
 package com.alan.db.converters;
 
-import android.database.Cursor;
+import net.sqlcipher.Cursor;
 import android.database.sqlite.SQLiteProgram;
 
 /**

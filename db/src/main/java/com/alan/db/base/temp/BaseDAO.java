@@ -2,12 +2,14 @@ package com.alan.db.base.temp;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
+
 import android.text.TextUtils;
 
 import com.alan.db.DBExecutor;
 import com.alan.db.DatabaseConfig;
+
+import net.sqlcipher.Cursor;
+import net.sqlcipher.database.SQLiteDatabase;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,10 +1,6 @@
 package com.alan.db.base;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.text.TextUtils;
-import android.util.Log;
 
 import com.alan.common.Logger;
 import com.alan.db.IDatabaseConfig;
@@ -13,6 +9,11 @@ import com.alan.db.base.temp.BaseDAO;
 import com.alan.db.table.Table;
 import com.alan.db.table.TableFactory;
 
+import net.sqlcipher.database.SQLiteDatabase;
+import net.sqlcipher.database.SQLiteOpenHelper;
+
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.List;
 
@@ -41,16 +42,19 @@ public class SQLiteManager extends SQLiteOpenHelper {
                 instance = new SQLiteManager(context, config.getDatabaseName(),
                         config.getDatabaseVersion());
             }
-            db = instance.getWritableDatabase();
-            try {
-                String attachDatabaseName = config.getAttachDatabaseName();
+            db = instance.getWritableDatabase(config.getKey());
 
-                if (!TextUtils.isEmpty(attachDatabaseName)) {
-                    db.execSQL(String.format("attach DATABASE '/data/data/%s/databases/%s' AS 'c'", context.getPackageName(), attachDatabaseName));
-                }
-            } catch (Exception e) {
-                Logger.e(Log.getStackTraceString(e));
-            }
+            config.attatch(db);
+//
+//            try {
+//                String attachDatabaseName = config.getAttachDatabaseName();
+//
+//                if (!TextUtils.isEmpty(attachDatabaseName)) {
+//                    db.execSQL(String.format("attach DATABASE '/data/data/%s/databases/%s' AS 'c'", context.getPackageName(), attachDatabaseName));
+//                }
+//            } catch (Exception e) {
+//                Logger.e(Log.getStackTraceString(e));
+//            }
         }
         return db;
     }
@@ -73,7 +77,7 @@ public class SQLiteManager extends SQLiteOpenHelper {
         createTempTable(db);
     }
 
-    public void createTempTable(SQLiteDatabase sqLiteDatabase){
+    public void createTempTable(SQLiteDatabase sqLiteDatabase) {
 
         List<Class<? extends BaseDAO>> classes = mConfig.getTempTables(mContext);
         for (Class<? extends BaseDAO> clazz : classes) {
@@ -123,5 +127,34 @@ public class SQLiteManager extends SQLiteOpenHelper {
             db = null;
             instance = null;
         }
+    }
+
+    public static void encryption(Context context, File file) {
+        if (mConfig == null) {
+            return;
+        }
+        try {
+            File tempFile = File.createTempFile("sqlcipherutils", "tmp", context.getCacheDir());
+
+            SQLiteDatabase db = SQLiteDatabase.openDatabase(file.getAbsolutePath(), "", null, SQLiteDatabase.OPEN_READWRITE);
+            db.rawExecSQL(String.format("ATTACH DATABASE '%s' AS encrypted KEY '%s';", tempFile.getAbsolutePath(), mConfig.getKey()));
+            db.rawExecSQL("SELECT sqlcipher_export('encrypted')");
+            db.rawExecSQL("DETACH DATABASE encrypted;");
+            int version = db.getVersion();
+            db.close();
+
+            db = SQLiteDatabase.openDatabase(tempFile.getAbsolutePath(), mConfig.getKey(), null, SQLiteDatabase.OPEN_READWRITE);
+            db.setVersion(version);
+            db.close();
+
+            file.delete();
+            tempFile.renameTo(file);
+        } catch (IOException e) {
+            Logger.error(e);
+        }
+    }
+
+    public static void attach(File file, SQLiteDatabase sqLiteDatabase) {
+        sqLiteDatabase.execSQL("attach DATABASE '" + file.getAbsolutePath() + "' AS 'c' KEY '" + mConfig.getKey() + "'");
     }
 }

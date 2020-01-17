@@ -1,8 +1,7 @@
 package com.alan.db;
 
+
 import android.content.ContentValues;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 
 import com.alan.common.Logger;
 import com.alan.common.reflect.ObjectFactory;
@@ -13,6 +12,9 @@ import com.alan.db.converters.IColumnConverter;
 import com.alan.db.table.Column;
 import com.alan.db.table.Table;
 import com.alan.db.table.TableFactory;
+
+import net.sqlcipher.Cursor;
+import net.sqlcipher.database.SQLiteDatabase;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -239,11 +241,13 @@ public class DBExecutor {
     }
 
     private static synchronized <T extends DbModel> T getItem(Class<T> tClass, Cursor cursor) {
+
         ObjectFactory<T> factory = new ObjectFactory<>(tClass);
         Table table = TableFactory.getTable(tClass);
         try {
             if (null != cursor && cursor.getCount() > 0 && cursor.moveToFirst()) {
-                return getModelByCursor(table, cursor, factory);
+                T t = getModelByCursor(table, cursor, factory);
+                return t;
             }
             return null;
         } catch (Exception e) {
@@ -430,6 +434,10 @@ public class DBExecutor {
         executor(sql, onSqlExecutorCallback, new Object[0]);
     }
 
+//    public synchronized static <T> T executor(String sql, OnSqlCallback<T> onSqlExecutorCallback) {
+//        executor(sql, onSqlExecutorCallback, new Object[0]);
+//    }
+
     public synchronized static void executor(Cursor cursor, OnSqlExecutorCallback onSqlExecutorCallback) {
         try {
             if (null != cursor && cursor.getCount() > 0) {
@@ -453,6 +461,11 @@ public class DBExecutor {
         executor(cursor, onSqlExecutorCallback);
     }
 
+//    public synchronized static <T>  T execSql(String sql, OnSqlCallback<T> onSqlCallback, Object... args) {
+//        Cursor cursor = getSQLiteDatabase().rawQuery(sql, getArgs(args));
+//        executor(cursor, onSqlExecutorCallback);
+//    }
+
     public static <T extends DbModel> T getObjectByCursor(Class<T> tClass, Cursor cursor) {
         if (null == cursor) {
             return null;
@@ -468,8 +481,12 @@ public class DBExecutor {
     }
 
     public interface OnSqlExecutorCallback {
-
         void onSqlExecutorCallback(Cursor cursor);
+    }
+
+
+    public interface OnSqlCallback<T> {
+        T onSqlExecutorCallback(Cursor cursor);
     }
 
     public interface OnHandlerTransactionListener {
