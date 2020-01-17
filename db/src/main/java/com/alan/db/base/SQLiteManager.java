@@ -135,7 +135,6 @@ public class SQLiteManager extends SQLiteOpenHelper {
         }
         try {
             File tempFile = File.createTempFile("sqlcipherutils", "tmp", context.getCacheDir());
-
             SQLiteDatabase db = SQLiteDatabase.openDatabase(file.getAbsolutePath(), "", null, SQLiteDatabase.OPEN_READWRITE);
             db.rawExecSQL(String.format("ATTACH DATABASE '%s' AS encrypted KEY '%s';", tempFile.getAbsolutePath(), mConfig.getKey()));
             db.rawExecSQL("SELECT sqlcipher_export('encrypted')");

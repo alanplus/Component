@@ -1,2 +1,2 @@
-include ':app', ':common', ':widget', ':httplib', ':db'
+include ':app', ':common', ':widget', ':httplib', ':db', ':framework'
 rootProject.name='Component'
